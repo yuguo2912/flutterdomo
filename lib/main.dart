@@ -22,6 +22,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Domotic',
+      debugShowCheckedModeBanner: false, // Supprime la banderole "debug"
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
@@ -140,7 +141,7 @@ class RegisterPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Padding(
+        child: SingleChildScrollView( // Permet le défilement si l'écran est petit
           padding: const EdgeInsets.all(16.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -155,35 +156,51 @@ class RegisterPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
-              TextField(
-                controller: usernameController,
-                decoration: InputDecoration(
-                  labelText: 'Username',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+              Center(
+                child: SizedBox(
+                  width: 300, // Définit une largeur fixe pour centrer le champ
+                  child: TextField(
+                    controller: usernameController,
+                    decoration: InputDecoration(
+                      labelText: 'Username',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
                   ),
                 ),
               ),
               const SizedBox(height: 20),
-              TextField(
-                controller: emailController,
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+              Center(
+                child: SizedBox(
+                  width: 300, // Définit une largeur fixe pour centrer le champ
+                  child: TextField(
+                  controller: emailController,
+                  decoration: InputDecoration(
+                    labelText: 'Email',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
                   ),
                 ),
               ),
+              
               const SizedBox(height: 20),
-              TextField(
-                controller: passwordController,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+              Center(
+                  child: SizedBox(
+                    width: 300, // Définit une largeur fixe pour centrer le champ
+                  child:TextField(
+                    controller: passwordController,
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    obscureText: true,
                   ),
                 ),
-                obscureText: true,
               ),
               const SizedBox(height: 20),
               ElevatedButton(
@@ -261,25 +278,35 @@ class LoginPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
-              TextField(
-                controller: usernameController,
-                decoration: InputDecoration(
-                  labelText: 'Username',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+              Center( 
+                child: SizedBox(
+                width: 300, // Définit une largeur fixe pour centrer le champ
+                child: TextField(
+                  controller: usernameController,
+                    decoration: InputDecoration(
+                      labelText: 'Username',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
                   ),
                 ),
               ),
               const SizedBox(height: 20),
-              TextField(
-                controller: passwordController,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+              Center(
+                child: SizedBox(
+                  width: 300, // Définit une largeur fixe pour centrer le champ
+                  child: TextField(
+                    controller: passwordController,
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    obscureText: true,
                   ),
                 ),
-                obscureText: true,
               ),
               const SizedBox(height: 20),
               ElevatedButton(
@@ -342,6 +369,8 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  String? selectedValue;
   List<dynamic> sensors = [];
   bool isLoading = false;
 
@@ -410,111 +439,187 @@ class _DashboardPageState extends State<DashboardPage> {
       },
     );
 
-    if (inputValue != null && inputValue!.isNotEmpty) {
+    if (inputValue != null) {
       if (type == 'minutes') {
         await fetchSensors(() => ApiServices.getSensorByMinutes(int.parse(inputValue!)));
-      } else if (type == 'id') {
-        await fetchSensors(() => ApiServices.getSensorById(int.parse(inputValue!)), isSingleSensor: true);
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false, // Désactive la flèche de retour
-        title: const Text('Dashboard'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              // Réinitialise le token global
-              bearerToken = null;
+    final width = MediaQuery.of(context).size.width;
+    final bool isLargeScreen = width > 800;
 
-              // Redirige vers la page de connexion
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => LoginPage()),
-                (route) => false, // Supprime toutes les routes précédentes
-              );
-            },
+    return Scaffold(
+      key: _scaffoldKey,
+      appBar: AppBar(
+        backgroundColor: Colors.deepPurple, // Change la couleur de la barre de navigation
+        elevation: 0,
+        titleSpacing: 0,
+        leading: isLargeScreen
+            ? null
+            : IconButton(
+                icon: const Icon(Icons.menu),
+                onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+              ),
+        title: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                "Dashboard",
+                style: TextStyle(
+                  fontFamily: 'Roboto',
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white, // Assurez-vous que le texte reste lisible
+                  letterSpacing: 1.5,
+                ),
+              ),
+              if (isLargeScreen) Expanded(child: _navBarItems())
+            ],
           ),
+        ),
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(right: 16.0),
+            child: CircleAvatar(child: _ProfileIcon()),
+          )
         ],
       ),
-      body: Column(
-        children: [
-          DropdownButton<String>(
-            hint: const Text('Select an action'),
-            items: [
-              DropdownMenuItem(
-                value: 'all',
-                child: const Text('Get All Sensors'),
-              ),
-              DropdownMenuItem(
-                value: 'minutes',
-                child: const Text('Get Sensors by Minutes'),
-              ),
-              DropdownMenuItem(
-                value: 'id',
-                child: const Text('Get Sensor by ID'),
-              ),
-            ],
-            onChanged: (value) async {
-              if (value == 'all') {
-                await fetchSensors(ApiServices.getAllSensor);
-              } else if (value == 'minutes') {
-                await _showInputDialog('minutes');
-              } else if (value == 'id') {
-                await _showInputDialog('id');
-              }
-            },
-          ),
-          isLoading
-              ? const CircularProgressIndicator()
-              : Expanded(
-                  child: GridView.builder(
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 3 / 4,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10,
-                    ),
-                    padding: const EdgeInsets.all(10),
-                    itemCount: sensors.length,
-                    itemBuilder: (context, index) {
-                      final sensor = sensors[index];
-                      return AnimatedSensorCard(
-                        id: sensor['id'],
-                        temperature: sensor['temperature'],
-                        room: sensor['room'] ?? "N/A",
-                        onDelete: () async {
-                          await ApiServices.deleteSensorById(sensor['id']);
-                          setState(() {
-                            sensors.removeAt(index);
-                          });
-                        },
-                      );
-                    },
-                  ),
+      drawer: isLargeScreen ? null : _drawer(),
+      body: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 2 / 2,
+                  crossAxisSpacing: 40,
+                  mainAxisSpacing: 40,
                 ),
-        ],
+                itemCount: sensors.length,
+                itemBuilder: (context, index) {
+                  final sensor = sensors[index];
+                  return Center(
+                    child: AnimatedSensorCard(
+                      id: sensor['id'],
+                      timeStamp: sensor['timeStamp'],
+                      onDelete: () async {
+                        await ApiServices.deleteSensorById(sensor['id']);
+                        setState(() {
+                          sensors.removeAt(index);
+                        });
+                      },
+                    ),
+                  );
+                },
+              ),
       ),
     );
   }
+
+  Widget _drawer() => Drawer(
+        child: ListView(
+          children: _menuItems
+              .map((item) => ListTile(
+                    onTap: () {
+                      _scaffoldKey.currentState?.openEndDrawer();
+                    },
+                    title: Text(item),
+                  ))
+              .toList(),
+        ),
+      );
+
+  Widget _navBarItems() => Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: _menuItems
+            .map(
+              (item) => InkWell(
+                onTap: () async {
+                  if (_menuItems.indexOf(item) == 0) {
+                    // All Sensors
+                    await fetchSensors(ApiServices.getAllSensor);
+                  } else if (_menuItems.indexOf(item) == 1) {
+                    // Recent Sensors
+                    await _showInputDialog('minutes'); // Demande à l'utilisateur d'entrer un nombre de minutes
+                  } else if (_menuItems.indexOf(item) == 2) {
+                    // Home (ou autre action)
+                    // Naviguer vers une autre page ou effectuer une autre action
+                  } else if (_menuItems.indexOf(item) == 3) {
+                    // Logout
+                    Navigator.pop(context);
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => LoginPage()),
+                    );
+                  }
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 16),
+                  child: Text(
+                    item,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      color: Colors.white, // Change la couleur du texte en noir
+                    ),
+                  ),
+                ),
+              ),
+            )
+            .toList(),
+      );
 }
+
+final List<String> _menuItems = <String>[
+  'All Sensors',
+  'Recent Sensors',
+  'Home',
+  'Logout',
+];
+
+class _ProfileIcon extends StatelessWidget {
+  const _ProfileIcon({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<Menu>(
+        icon: const Icon(Icons.person),
+        offset: const Offset(0, 40),
+        onSelected: (Menu item) {},
+        itemBuilder: (BuildContext context) => <PopupMenuEntry<Menu>>[
+              const PopupMenuItem<Menu>(
+                value: Menu.itemOne,
+                child: Text('Account'),
+              ),
+              const PopupMenuItem<Menu>(
+                value: Menu.itemTwo,
+                child: Text('Settings'),
+              ),
+              const PopupMenuItem<Menu>(
+                value: Menu.itemThree,
+                child: Text('Sign Out'),
+              ),
+            ]);
+  }
+}
+
+enum Menu { itemOne, itemTwo, itemThree }
 
 class AnimatedSensorCard extends StatefulWidget {
   final int id;
-  final double temperature;
-  final String room;
+  final String? timeStamp; // Changez en String? pour accepter les valeurs nulles
   final VoidCallback onDelete;
 
   const AnimatedSensorCard({
     super.key,
     required this.id,
-    required this.temperature,
-    required this.room,
+    required this.timeStamp,
     required this.onDelete,
   });
 
@@ -525,39 +630,41 @@ class AnimatedSensorCard extends StatefulWidget {
 class _AnimatedSensorCardState extends State<AnimatedSensorCard> {
   double _rotationX = 0.0;
   double _rotationY = 0.0;
-  bool _showAnimation = false;
 
   void _onPanUpdate(DragUpdateDetails details) {
     setState(() {
-      _rotationX += details.delta.dy * 0.01; // Ajuste la rotation sur l'axe X
-      _rotationY -= details.delta.dx * 0.01; // Ajuste la rotation sur l'axe Y
+      _rotationX += details.delta.dy * 0.01;
+      _rotationY -= details.delta.dx * 0.01;
     });
   }
 
   void _onPanEnd(DragEndDetails details) {
     setState(() {
-      _rotationX = 0.0; // Réinitialise la rotation sur l'axe X
-      _rotationY = 0.0; // Réinitialise la rotation sur l'axe Y
-    });
-  }
-
-  void _onTap() {
-    setState(() {
-      _showAnimation = !_showAnimation; // Active ou désactive l'animation
+      _rotationX = 0.0;
+      _rotationY = 0.0;
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    // Vérifiez si timeStamp est null
+    String timeAgoText;
+    if (widget.timeStamp != null) {
+      DateTime timestamp = DateTime.parse(widget.timeStamp!);
+      int minutesAgo = DateTime.now().difference(timestamp).inMinutes;
+      timeAgoText = 'Taken $minutesAgo minutes ago';
+    } else {
+      timeAgoText = 'Timestamp unavailable';
+    }
+
     return GestureDetector(
       onPanUpdate: _onPanUpdate,
       onPanEnd: _onPanEnd,
-      onTap: _onTap,
       child: Stack(
         children: [
           Transform(
             transform: Matrix4.identity()
-              ..setEntry(3, 2, 0.001) // Perspective
+              ..setEntry(3, 2, 0.001)
               ..rotateX(_rotationX)
               ..rotateY(_rotationY),
             alignment: FractionalOffset.center,
@@ -565,12 +672,12 @@ class _AnimatedSensorCardState extends State<AnimatedSensorCard> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(15),
                 image: const DecorationImage(
-                  image: AssetImage('assets/images/capteur.png'), // Image de fond
+                  image: AssetImage('assets/images/capteur.png'),
                   fit: BoxFit.cover,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.white,
                     blurRadius: 10,
                     offset: const Offset(0, 5),
                   ),
@@ -578,13 +685,6 @@ class _AnimatedSensorCardState extends State<AnimatedSensorCard> {
               ),
             ),
           ),
-          if (_showAnimation)
-            Positioned.fill(
-              child: FallingIconsAnimation(
-                icon: widget.temperature > 10 ? Icons.wb_sunny : Icons.ac_unit,
-                color: widget.temperature > 10 ? Colors.orange : Colors.blue,
-              ),
-            ),
           Positioned.fill(
             child: Padding(
               padding: const EdgeInsets.all(10),
@@ -596,31 +696,20 @@ class _AnimatedSensorCardState extends State<AnimatedSensorCard> {
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 18,
-                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   Text(
-                    'Room: ${widget.room}',
+                    timeAgoText, // Affiche le texte basé sur timeStamp
                     style: const TextStyle(
-                      color: Colors.white70,
+                      color: Colors.white,
                       fontSize: 14,
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: _onTap,
-                    child: Text(
-                      'Temperature: ${widget.temperature.toStringAsFixed(1)}°C',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        decoration: TextDecoration.underline,
-                      ),
                     ),
                   ),
                   ElevatedButton(
                     onPressed: widget.onDelete,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.redAccent,
+                      backgroundColor: Colors.deepPurple, // Couleur de fond blanche
+                      foregroundColor: Colors.white, // Couleur du texte noire
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -632,81 +721,6 @@ class _AnimatedSensorCardState extends State<AnimatedSensorCard> {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class FallingIconsAnimation extends StatefulWidget {
-  final IconData icon;
-  final Color color;
-
-  const FallingIconsAnimation({
-    super.key,
-    required this.icon,
-    required this.color,
-  });
-
-  @override
-  State<FallingIconsAnimation> createState() => _FallingIconsAnimationState();
-}
-
-class _FallingIconsAnimationState extends State<FallingIconsAnimation> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late List<Animation<double>> _fallingAnimations;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 3),
-    )..repeat();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    // Utilisez MediaQuery ici, car le contexte est maintenant disponible
-    final screenHeight = MediaQuery.of(context).size.height;
-
-    _fallingAnimations = List.generate(
-      20,
-      (index) => Tween<double>(begin: -50, end: screenHeight).animate(
-        CurvedAnimation(
-          parent: _controller,
-          curve: Interval(index * 0.05, 1.0, curve: Curves.linear),
-        ),
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: List.generate(
-        20,
-        (index) => AnimatedBuilder(
-          animation: _fallingAnimations[index],
-          builder: (context, child) {
-            return Positioned(
-              top: _fallingAnimations[index].value,
-              left: (index * 50) % MediaQuery.of(context).size.width,
-              child: Icon(
-                widget.icon,
-                color: widget.color.withOpacity(0.7),
-                size: 30,
-              ),
-            );
-          },
-        ),
       ),
     );
   }
