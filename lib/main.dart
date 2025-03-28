@@ -601,7 +601,7 @@ class _ProfileIcon extends StatelessWidget {
                 value: Menu.itemTwo,
                 child: Text('Settings'),
               ),
-              const PopupMenuItem<Menu>( afgeagaega
+              const PopupMenuItem<Menu>(
                 value: Menu.itemThree,
                 child: Text('Sign Out'),
               ),
